@@ -74,7 +74,8 @@ export const useProfileStore = create<ProfileState>()(
         const profile = profiles.find(profile => profile.id === activeProfileId) || null;
 
         // Only log when this is called, but don't log on each render
-        if (process.env.NODE_ENV !== 'production') {
+        // Use Vite's import.meta.env.DEV instead of process.env.NODE_ENV
+        if (import.meta.env.DEV) {
           const stack = new Error().stack?.split('\n') || [];
           // Check if this was called from a component or from a hook/other function
           if (stack.length > 3 && !stack[3].includes('getActiveProfile')) {

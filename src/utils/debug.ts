@@ -5,7 +5,8 @@ const DEBUG = import.meta.env.DEV;
 
 export const logger = {
   /** Log store-related actions */
-  store: (storeName: string, action: string, data?: unknown) => { // Use unknown instead of any
+  store: (storeName: string, action: string, data?: unknown) => {
+    // Use unknown instead of any
     if (DEBUG) {
       // Assuming 'no-console' rule is relaxed for this file via config
       console.group(`%c${storeName} Store: ${action}`, 'color: #3b82f6; font-weight: bold;');
@@ -15,7 +16,8 @@ export const logger = {
   },
 
   /** Log API service calls */
-  api: (serviceName: string, method: string, data?: unknown) => { // Use unknown instead of any
+  api: (serviceName: string, method: string, data?: unknown) => {
+    // Use unknown instead of any
     if (DEBUG) {
       // Assuming 'no-console' rule is relaxed for this file via config
       console.group(`%c${serviceName} API: ${method}`, 'color: #10b981; font-weight: bold;');
@@ -25,7 +27,8 @@ export const logger = {
   },
 
   /** Log errors */
-  error: (source: string, error: unknown) => { // Use unknown instead of any
+  error: (source: string, error: unknown) => {
+    // Use unknown instead of any
     if (DEBUG) {
       // Assuming 'no-console' rule is relaxed for this file via config
       console.group(`%c${source} Error`, 'color: #ef4444; font-weight: bold;');
@@ -36,7 +39,8 @@ export const logger = {
   },
 
   /** Log general information */
-  info: (message: string, data?: unknown) => { // Use unknown instead of any
+  info: (message: string, data?: unknown) => {
+    // Use unknown instead of any
     if (DEBUG) {
       // Assuming 'no-console' rule is relaxed for this file via config
       console.group(`%c${message}`, 'color: #8b5cf6; font-weight: bold;');
@@ -46,9 +50,10 @@ export const logger = {
   },
 
   /** Log verbose debugging information */
-  debug: (message: string, data?: unknown) => { // Use unknown instead of any
+  debug: (message: string, data?: unknown) => {
+    // Use unknown instead of any
     if (DEBUG) {
-       // Use console.debug or console.log depending on preference/config
+      // Use console.debug or console.log depending on preference/config
       console.group(`%c${message}`, 'color: #71717a;'); // Dim color for debug
       if (data !== undefined) console.debug('Data:', data);
       console.groupEnd();

@@ -1,3 +1,4 @@
+// Removed the eslint-disable comment from the top
 // src/utils/debug.test.ts
 import { logger } from './debug';
 

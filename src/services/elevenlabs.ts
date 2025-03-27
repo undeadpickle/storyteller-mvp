@@ -49,34 +49,8 @@ const DEFAULT_OPTIONS: Omit<TextToSpeechOptions, 'voiceId'> = {
   speakerBoost: true,
 };
 
-/**
- * Helper function to safely create an object URL in browser environments
- */
-function createObjectURL(blob: Blob): string {
-  try {
-    // Some environments may not have URL or createObjectURL
-    return URL?.createObjectURL?.(blob) || '';
-  } catch (e) {
-    logger.error('ElevenLabsService', 'Error creating object URL: ' + e);
-    return '';
-  }
-}
-
-/**
- * Helper function to make fetch requests with error handling
- */
-async function makeFetchRequest(url: string, options: RequestInit): Promise<Response> {
-  try {
-    // Check if fetch is available
-    if (typeof fetch !== 'function') {
-      throw new Error('Fetch API is not available in this environment');
-    }
-    return await fetch(url, options);
-  } catch (e) {
-    logger.error('ElevenLabsService', 'Fetch error: ' + e);
-    throw e;
-  }
-}
+// REMOVED unused helper function createObjectURL
+// REMOVED unused helper function makeFetchRequest
 
 /**
  * ElevenLabs API Service for text-to-speech functionality
@@ -128,6 +102,7 @@ class ElevenLabsService {
         ...options,
       };
 
+      // Using fetch directly
       const response = await fetch(`${this.apiUrl}/text-to-speech/${fullOptions.voiceId}`, {
         method: 'POST',
         headers: {
@@ -156,7 +131,7 @@ class ElevenLabsService {
       // The response is the audio data
       const audioBlob = await response.blob();
 
-      // Create a URL for the audio blob
+      // Using URL.createObjectURL directly
       const audioUrl = URL.createObjectURL(audioBlob);
 
       logger.api('ElevenLabsService', 'convertTextToSpeech:success', { audioUrl });

@@ -14,8 +14,28 @@ export default [
 
   // Global ignores for common directories
   {
+    // Also ignore eslint.config.js globally if preferred, but better to ignore in specific block
     ignores: ['node_modules', 'dist', 'build', 'coverage'],
   },
+
+  // ****** MODIFIED BLOCK for CommonJS Config Files ******
+  {
+    // Target JS/CJS files typically used for config at the project root
+    files: ['*.js', '*.cjs', '*.mjs'],
+    // IMPORTANT: Ignore eslint.config.js within this specific block
+    ignores: ['eslint.config.js'],
+    languageOptions: {
+      globals: {
+        ...globals.node, // Add Node.js globals like module, require, process
+      },
+      sourceType: 'commonjs', // Indicate these are CommonJS modules
+    },
+    // Optionally add specific rules or disable inherited ones for config files
+    // rules: {
+    //   '@typescript-eslint/...': 'off', // Turn off TS rules if they wrongly apply
+    // }
+  },
+  // ****** END MODIFIED BLOCK ******
 
   // Configuration for TypeScript and React files (Main Application Code)
   {
@@ -24,14 +44,13 @@ export default [
       parser: tsParser,
       parserOptions: {
         ecmaVersion: 'latest',
-        sourceType: 'module',
+        sourceType: 'module', // This block is for ES Modules
         ecmaFeatures: {
           jsx: true,
         },
       },
       globals: {
         ...globals.browser, // Define standard browser globals (window, document, fetch, URL, etc.)
-        // Add any other specific globals needed ONLY for your main app code here
       },
     },
     plugins: {
@@ -47,47 +66,39 @@ export default [
       ...reactHooksPlugin.configs.recommended.rules,
 
       // Custom rule adjustments for app code
-      'react/react-in-jsx-scope': 'off', // Not needed with new JSX transform
-      'react/prop-types': 'off', // Prefer TypeScript for prop types
-      'prettier/prettier': 'warn', // Show Prettier issues as warnings
-      '@typescript-eslint/explicit-module-boundary-types': 'off', // Optional: relax rule for inferred return types
-      '@typescript-eslint/no-unused-vars': [
-        'warn', // Warn about unused variables
-        { argsIgnorePattern: '^_' }, // Allow unused args starting with _
+      'react/react-in-jsx-scope': 'off',
+      'react/prop-types': 'off',
+      'prettier/prettier': 'warn',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      'no-console': [
+        'warn',
+        { allow: ['warn', 'error', 'info', 'debug', 'group', 'groupEnd', 'log'] },
       ],
-      'no-console': ['warn', { allow: ['warn', 'error', 'info', 'debug', 'group', 'groupEnd'] }], // Allow specific console methods, especially for your logger
-
-      // Disable rules specifically for non-test code if needed (usually not necessary)
     },
     settings: {
       react: {
-        version: 'detect', // Automatically detect React version
+        version: 'detect',
       },
     },
   },
 
   // Configuration specifically for Test Files (Jest)
   {
-    files: ['src/__tests__/**/*.{ts,tsx}', '**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}'], // Target test files
+    files: ['src/__tests__/**/*.{ts,tsx}', '**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}'],
     plugins: {
-      jest: jestPlugin, // Enable the Jest plugin
+      jest: jestPlugin,
     },
     languageOptions: {
-      // Test files run in Node.js via Jest, often with JSDOM simulating a browser
       globals: {
-        ...globals.node, // Add Node.js globals (e.g., process)
-        ...globals.jest, // Add Jest globals (e.g., describe, it, expect, jest)
-        ...globals.browser, // Add Browser globals if using JSDOM (e.g., fetch, URL, window)
+        ...globals.node,
+        ...globals.jest,
+        ...globals.browser,
       },
     },
     rules: {
-      // Apply Jest recommended rules
       ...jestPlugin.configs.recommended.rules,
-
-      // Optional: Relax or adjust certain rules ONLY for test files if necessary
-      // e.g., allow more 'any' types, console logs, or specific patterns common in tests
-      // "@typescript-eslint/no-explicit-any": "off",
-      // "no-console": "off",
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
 ];

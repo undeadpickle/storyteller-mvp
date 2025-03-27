@@ -20,7 +20,7 @@ export function StoreTest() {
     profiles,
     activeProfileId,
     addProfile,
-    updateProfile,
+    // updateProfile, // <--- REMOVED THIS LINE
     deleteProfile,
     setActiveProfile,
     getActiveProfile,

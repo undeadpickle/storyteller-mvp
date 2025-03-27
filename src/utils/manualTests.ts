@@ -55,18 +55,26 @@ export function testDebugSystem() {
   }, 'tracked-async-operation');
 
   // Using .then for clarity in this manual test script
-  trackedAsync().then(asyncResult => {
-    logger.info('Tracked async function result:', { result: asyncResult });
-    console.log('\n%c=== Debug System Tests Completed ===', 'color: green; font-size: 1.2em;');
-    console.info('Hints:');
-    console.info('- Check the browser console for detailed logger outputs and performance marks.');
-    console.info('- To test the Debug Panel overlay, press Ctrl+Shift+D (or Cmd+Shift+D).');
-    console.info('- To test Error Boundaries, use the "Test Debug System" button in the UI (if available) or manually trigger an error.');
-
-  }).catch(err => {
-     logger.error('Error during tracked async function test', err);
-     console.log('\n%c=== Debug System Tests Completed with ERROR ===', 'color: red; font-size: 1.2em;');
-  });
+  trackedAsync()
+    .then(asyncResult => {
+      logger.info('Tracked async function result:', { result: asyncResult });
+      console.log('\n%c=== Debug System Tests Completed ===', 'color: green; font-size: 1.2em;');
+      console.info('Hints:');
+      console.info(
+        '- Check the browser console for detailed logger outputs and performance marks.'
+      );
+      console.info('- To test the Debug Panel overlay, press Ctrl+Shift+D (or Cmd+Shift+D).');
+      console.info(
+        '- To test Error Boundaries, use the "Test Debug System" button in the UI (if available) or manually trigger an error.'
+      );
+    })
+    .catch(err => {
+      logger.error('Error during tracked async function test', err);
+      console.log(
+        '\n%c=== Debug System Tests Completed with ERROR ===',
+        'color: red; font-size: 1.2em;'
+      );
+    });
 
   // Return information for verification if needed immediately
   return {

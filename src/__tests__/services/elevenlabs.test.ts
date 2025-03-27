@@ -1,5 +1,5 @@
 // src/__tests__/services/elevenlabs.test.ts
-import elevenlabsService, { AVAILABLE_VOICES } from '../../services/elevenlabs';
+import { AVAILABLE_VOICES } from '../../services/elevenlabs';
 
 // Mock logger to prevent console output during tests
 // Assuming logger is correctly mocked elsewhere or this structure works for your setup
@@ -36,8 +36,8 @@ describe('ElevenLabsService', () => {
     // Assign mocks to global scope using globalThis
     globalThis.fetch = mockFetch;
 
-    // Mock globalThis.URL, disabling the 'any' rule for this specific mock
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // Mock globalThis.URL
+    // Removed the eslint-disable-next-line comment as the rule is off for test files now
     globalThis.URL = {
       createObjectURL: mockCreateObjectURL,
       revokeObjectURL: mockRevokeObjectURL,
@@ -111,4 +111,4 @@ describe('ElevenLabsService', () => {
   // - Test successful API call mock (mockFetch.mockResolvedValueOnce(...))
   // - Test API error handling (mockFetch.mockResolvedValueOnce({ ok: false, ... }))
   // - Test different voice options if applicable
-});
+}); // Ensured newline exists after this line

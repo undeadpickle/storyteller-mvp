@@ -17,33 +17,39 @@ export function useComponentDebug(
   props?: Record<string, unknown>, // Use more specific type than 'any'
   dependencies?: ReadonlyArray<unknown> // Use more specific type than 'any[]'
 ) {
-  // Only run the hook logic in development mode
-  if (!import.meta.env.DEV) {
-    return;
-  }
-
+  // Call Hooks UNCONDITIONALLY at the top level
   const renderCount = useRef(0);
-  // Use matching type for the ref
   const prevDeps = useRef<ReadonlyArray<unknown> | undefined>(dependencies);
 
   // --- Effect for Mount and Unmount ---
   useEffect(() => {
+    // Conditional logic moved INSIDE the effect
+    if (!import.meta.env.DEV) {
+      return; // Do nothing in production builds
+    }
+
     logger.info(`${componentName} mounted`, props);
     renderCount.current = 1; // Initialize render count on mount
 
     // Cleanup function runs on unmount
     return () => {
+      // Conditional logic moved INSIDE the cleanup
+      if (!import.meta.env.DEV) {
+        return; // Do nothing in production builds
+      }
       logger.info(`${componentName} unmounted after ${renderCount.current} renders`);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [componentName]); // Rule disabled here intentionally: Only run on mount/unmount based on componentName.
-                      // Adding 'props' here would cause logs on every prop change, which might be too noisy.
-                      // If props logging on change is desired, a separate effect is better.
-
+  }, [componentName]); // Keep dependencies for mount/unmount logic only
 
   // --- Effect for Dependency Changes ---
   // This effect runs *after* the initial mount and whenever 'dependencies' array changes.
   useEffect(() => {
+    // Conditional logic moved INSIDE the effect
+    if (!import.meta.env.DEV) {
+      return; // Do nothing in production builds
+    }
+
     // Skip effect if dependencies array wasn't provided or is empty
     if (!dependencies || dependencies.length === 0) return;
 
@@ -61,12 +67,12 @@ export function useComponentDebug(
 
       // Log if any dependencies changed
       if (changedDepsIndices.length > 0) {
-        const changedDepsData: Record<string, { prev: unknown, current: unknown }> = {};
+        const changedDepsData: Record<string, { prev: unknown; current: unknown }> = {};
         changedDepsIndices.forEach(index => {
-            changedDepsData[index] = {
-                prev: prevDeps.current?.[index],
-                current: dependencies[index]
-            };
+          changedDepsData[index] = {
+            prev: prevDeps.current?.[index],
+            current: dependencies[index],
+          };
         });
 
         logger.debug(`${componentName} dependencies changed`, {
@@ -82,6 +88,6 @@ export function useComponentDebug(
     prevDeps.current = dependencies;
     // Increment render count *after* potential logging for the current render cycle
     renderCount.current++;
-
-  }, [componentName, dependencies]); // Effect depends on componentName and the dependencies array itself
+    // Add dependencies used within this effect: componentName and the dependencies array itself
+  }, [componentName, dependencies]);
 }

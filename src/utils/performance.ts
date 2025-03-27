@@ -1,7 +1,7 @@
 import { logger } from './debug';
 
-// Simple environment detection for both Vite and Jest
-const IS_DEV = process.env.NODE_ENV !== 'production';
+// Use Vite's import.meta.env for environment detection
+const IS_DEV = import.meta.env.DEV;
 
 /**
  * Utility for tracking performance measurements
@@ -12,6 +12,7 @@ export const performanceMonitor = {
    * @param label A unique label for this measurement
    */
   start: (label: string) => {
+    // Check IS_DEV (derived from import.meta.env.DEV)
     if (IS_DEV && typeof window !== 'undefined') {
       window.performance.mark(`${label}-start`);
     }
@@ -23,6 +24,7 @@ export const performanceMonitor = {
    * @param threshold Optional threshold in ms to only log if exceeded
    */
   end: (label: string, threshold = 0) => {
+    // Check IS_DEV
     if (IS_DEV && typeof window !== 'undefined') {
       try {
         window.performance.mark(`${label}-end`);
@@ -45,7 +47,8 @@ export const performanceMonitor = {
           window.performance.clearMarks(`${label}-end`);
           window.performance.clearMeasures(label);
         }
-      } catch (error) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_error) {
         // Silently ignore errors in performance measurement
         // to avoid breaking the app
       }
@@ -58,8 +61,11 @@ export const performanceMonitor = {
    * @param label Label for the measurement
    * @param threshold Optional threshold in ms
    */
-  track: <T extends (...args: any[]) => any>(fn: T, label: string, threshold = 0): T => {
+  // Changed 'any[]' to 'unknown[]' and '=> any' to '=> unknown'
+  track: <T extends (...args: unknown[]) => unknown>(fn: T, label: string, threshold = 0): T => {
+    // Check IS_DEV
     if (IS_DEV) {
+      // We need to correctly type the parameters here now
       return ((...args: Parameters<T>) => {
         performanceMonitor.start(label);
         const result = fn(...args);

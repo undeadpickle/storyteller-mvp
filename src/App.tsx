@@ -21,13 +21,13 @@ function App() {
       // @ts-expect-error - Adding to window for testing purposes, acknowledge potential type error
       window.testDebugSystem = testDebugSystem;
 
-      // These console.log statements might still trigger 'no-console' warnings
-      // unless the rule is relaxed for this file in eslint.config.js
-      console.log(
-        '%c📋 Debug Testing Available',
-        'color: #8b5cf6; font-size: 14px; font-weight: bold;'
+      // Use logger.info instead of console.log
+      logger.info(
+        '📋 Debug Testing Available',
+        // Pass empty object if no data, or potentially add styling info if logger supported it
+        {}
       );
-      console.log('%cRun window.testDebugSystem() to verify debugging tools', 'color: #8b5cf6;');
+      logger.info('Run window.testDebugSystem() to verify debugging tools', {});
     }
 
     // Log app initialization

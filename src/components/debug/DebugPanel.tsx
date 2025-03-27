@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { useProfileStore } from '../../store/useProfileStore';
 import { useStoryStore } from '../../store/useStoryStore';
+import { logger } from '../../utils/debug'; // Import logger
 
 /**
  * Debug panel for development mode that shows current state
@@ -101,9 +102,11 @@ export function DebugPanel() {
           <h3 className="font-semibold text-blue-400 mb-1">Actions</h3>
           <button
             onClick={() => {
-              // Assuming 'no-console' rule is relaxed for this file via config
+              // Disable rule for specific console action
+              // eslint-disable-next-line no-console
               console.clear();
-              console.log('Console cleared by Debug Panel');
+              // Use logger for the informational message
+              logger.info('Console cleared by Debug Panel');
             }}
             className="text-xs bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded"
           >
