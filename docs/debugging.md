@@ -6,82 +6,95 @@ This document provides an overview of the debugging tools and features available
 
 ### 1. Logger Utility
 
-Located in `src/utils/debug.ts`, the logger provides color-coded console groups for different types of logs:
+Located in `src/utils/debug.ts`, the logger provides color-coded console groups for different types of logs. It utilizes standard `console` methods (`log`, `info`, `warn`, `error`, `debug`, `group`, `groupEnd`) internally, which are configured as allowed in the project's ESLint setup.
 
 - `logger.store()` - For logging Zustand store activity (blue)
 - `logger.api()` - For logging API calls and responses (green)
 - `logger.error()` - For logging errors (red)
 - `logger.info()` - For logging general information (purple)
+- `logger.debug()` - For logging verbose debugging details (grey)
 
 Example usage:
 
 ```typescript
-import { logger } from "../utils/debug";
+import { logger } from '../utils/debug';
 
 // Log store actions
-logger.store("ProfileStore", "addProfile", { profile });
+logger.store('ProfileStore', 'addProfile', { profile });
 
 // Log API calls
-logger.api("ElevenLabsService", "convertTextToSpeech", { text: "Hello world" });
+logger.api('ElevenLabsService', 'convertTextToSpeech', { text: 'Hello world' });
 
 // Log errors
 try {
   // Some code that might throw
 } catch (error) {
-  logger.error("Component Name", error);
+  logger.error('Component Name', error);
 }
 
 // Log general info
-logger.info("App initialized", { version: "1.0.0" });
+logger.info('App initialized', { version: '1.0.0' });
+
+// Log debug details
+logger.debug('Checking loop variable', { index: i });
 ```
 
 ### 2. Performance Monitoring
 
-Located in `src/utils/performance.ts`, this utility helps track execution time:
+Located in `src/utils/performance.ts`, this utility helps track execution time using the browser's window.performance API. It only runs in development mode (checking import.meta.env.DEV).
 
 - `performanceMonitor.start(label)` - Start timing an operation
-- `performanceMonitor.end(label, threshold)` - End timing and log if above threshold
-- `performanceMonitor.track(fn, label, threshold)` - Wrap a function with performance monitoring
+- `performanceMonitor.end(label, threshold)` - End timing and log to console (using logger.info) if duration exceeds the optional threshold (in milliseconds).
+- `performanceMonitor.track(fn, label, threshold)` - Wrap a function (sync or async) with performance monitoring.
 
 Example usage:
 
 ```typescript
-import { performanceMonitor } from "../utils/performance";
+import { performanceMonitor } from '../utils/performance';
 
 // Track a synchronous operation
-performanceMonitor.start("operation-name");
+performanceMonitor.start('operation-name');
 // ... some code
-performanceMonitor.end("operation-name");
+performanceMonitor.end('operation-name'); // Logs if > 0ms by default
 
-// Track a function
+// Track a function, only log if it takes > 50ms
 const trackedFunction = performanceMonitor.track(
   () => {
     // Function code here
   },
-  "function-name",
+  'function-name',
   50 // Only log if execution takes more than 50ms
 );
+const result = trackedFunction();
 
 // Track an async function
-const fetchData = performanceMonitor.track(async () => {
-  const response = await fetch("/api/data");
-  return response.json();
-}, "fetch-data");
+const fetchData = performanceMonitor.track(
+  async () => {
+    const response = await fetch('/api/data');
+    return response.json();
+  },
+  'fetch-data',
+  100
+); // Log if fetch takes > 100ms
+const data = await fetchData();
 ```
 
-### 3. Component Debugging
+### 3. Component Debugging Hook
 
-The `useComponentDebug` hook in `src/hooks/useComponentDebug.ts` helps track component lifecycle:
+The `useComponentDebug` hook in `src/hooks/useComponentDebug.ts` helps track component lifecycle events (mount/unmount) and optionally changes in specified dependencies.
+
+Important: This hook calls React hooks (useRef, useEffect) unconditionally as required by the Rules of Hooks. The logging logic inside the effects is conditional and only runs in development mode (import.meta.env.DEV).
 
 ```typescript
-import { useComponentDebug } from "../hooks/useComponentDebug";
+import { useComponentDebug } from '../hooks/useComponentDebug';
 
 function MyComponent(props) {
-  // Log mount/unmount and prop changes
-  useComponentDebug("MyComponent", props);
+  // Log mount/unmount and pass props (logged on mount)
+  // Warning: Logging props object directly might be noisy if reference changes often.
+  useComponentDebug('MyComponent', props);
 
-  // Or track specific dependency changes
-  useComponentDebug("MyComponent", null, [someDependency]);
+  // Or track specific dependency changes (logs when dependencies change after mount)
+  useComponentDebug('MyComponent', null, [someDependency, anotherValue]);
 
   // Rest of component code...
 }
@@ -89,62 +102,67 @@ function MyComponent(props) {
 
 ### 4. Error Boundaries
 
-The `ErrorBoundary` component in `src/components/debug/ErrorBoundary.tsx` catches and displays React errors:
+The `ErrorBoundary` component in `src/components/debug/ErrorBoundary.tsx` catches JavaScript errors during rendering in its child component tree, logs them using logger.error, and displays a fallback UI instead of crashing the whole app.
 
-```tsx
+```typescript
 import { ErrorBoundary } from "./components/debug/ErrorBoundary";
 
 <ErrorBoundary
   onError={(error, errorInfo) => {
-    // Custom error handling
+    // Optional: Custom error handling in addition to logging
+    // e.g., send report to an external service
   }}
-  fallback={<p>Something went wrong</p>}
+  fallback={<p>Something went wrong loading this section.</p>}
 >
-  <YourComponent />
-</ErrorBoundary>;
+  <YourPotentiallyCrashingComponent />
+</ErrorBoundary>
 ```
 
 ### 5. Debug Panel
 
-The `DebugPanel` component in `src/components/debug/DebugPanel.tsx` provides a real-time view of application state.
+The `DebugPanel` component in `src/components/debug/DebugPanel.tsx` provides a real-time overlay view of application state, useful for inspecting Zustand store contents without excessive console logging.
 
-- **Toggle with:** `Ctrl+Shift+D` (only in development mode)
-- **Features:** Shows current app state, profile state, story state, and more
+- Toggle with: `Ctrl+Shift+D` (only works in development mode, checks import.meta.env.DEV)
+- Features: Shows current app state (loading, error), profile state (active profile, list), story state (theme, generating status, progress), and provides actions like clearing the console.
 
-## Testing Error Handling
+## Environment Checks
 
-The `ErrorTest` component in `src/components/debug/ErrorTest.tsx` can be used to test different error scenarios:
+Note that debugging utilities often rely on checking the environment. Use Vite's `import.meta.env.DEV` boolean flag for checks in browser-facing code (like utils, hooks, components) instead of Node.js's `process.env.NODE_ENV`.
 
-- Render errors (React component errors)
-- Promise errors (unhandled rejections)
-- Async errors (caught exceptions)
+```typescript
+// Example check in a utility or component
+if (import.meta.env.DEV) {
+  // Run debug-specific logic
+  logger.debug('Running in development mode');
+}
+```
 
 ## Best Practices
 
-1. **Use Appropriate Log Levels:**
+### Use Appropriate Logger Levels:
 
-   - Store actions should use `logger.store()`
-   - API calls should use `logger.api()`
-   - Errors should use `logger.error()`
-   - General info should use `logger.info()`
+- Store actions: `logger.store()`
+- API calls: `logger.api()`
+- Errors: `logger.error()` (catches, uncaught exceptions)
+- General info: `logger.info()`
+- Detailed steps: `logger.debug()`
 
-2. **Performance Monitoring:**
+### Performance Monitoring:
 
-   - Use `performanceMonitor.track()` for functions that might have performance impacts
-   - Set appropriate thresholds to avoid console noise
+- Use `performanceMonitor.track()` for functions/operations prone to slowness.
+- Set reasonable threshold values to avoid console noise for fast operations.
 
-3. **Error Handling:**
+### Error Handling:
 
-   - Wrap components in `ErrorBoundary` to prevent entire app crashes
-   - Always log errors with context using `logger.error()`
+- Wrap potentially unstable components or sections in `<ErrorBoundary>`.
+- Always log caught errors with context using `logger.error()`.
 
-4. **Component Debugging:**
+### Component Debugging:
 
-   - Use `useComponentDebug()` when investigating component re-render issues
-   - Be careful with what you log to avoid performance impact
+- Use `useComponentDebug()` judiciously when investigating re-renders or prop/dependency changes. Logging props directly can be very verbose.
 
-5. **Debug Panel:**
-   - Use the debug panel to check state without console logs
-   - Press `Ctrl+Shift+D` to toggle it on/off
+### Debug Panel:
 
-Remember that most of these tools only run in development mode and won't affect production builds.
+- Utilize the `Ctrl+Shift+D` panel to inspect state changes without manually logging store contents everywhere.
+
+Remember that most of these tools (logging, performance marks, debug hook logic, debug panel) are designed to only be active in development mode (`import.meta.env.DEV`) and should have minimal or no impact on production builds.

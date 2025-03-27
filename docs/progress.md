@@ -13,40 +13,35 @@ This document tracks the progress of the StoryTeller MVP development based on th
 - [x] Configure environment variables (.env.example)
 - [x] Set up state management with Zustand
 - [x] Set up debugging tools and error handling
-  - [x] Logging utility with color-coded console output
-  - [x] Performance monitoring
-  - [x] Component lifecycle debugging
-  - [x] Error boundaries
-  - [x] Debug panel (toggle with Ctrl+Shift+D in dev mode)
-  - [x] Manual tests for verification
-  - [x] Automated Jest tests for all debugging utilities
-- [x] Set up linters and formatters
-- [x] Add basic documentation
+  - [x] Logging utility with color-coded console output (`src/utils/debug.ts`)
+  - [x] Performance monitoring (`src/utils/performance.ts`)
+  - [x] Component lifecycle debugging hook (`src/hooks/useComponentDebug.ts`)
+  - [x] Error boundaries (`src/components/debug/ErrorBoundary.tsx`)
+  - [x] Debug panel (toggle with Ctrl+Shift+D in dev mode) (`src/components/debug/DebugPanel.tsx`)
+  - [x] Manual tests for verification (`src/utils/manualTests.ts`)
+  - [x] Automated Jest tests for debugging utilities (partially, e.g., `debug.test.ts`, `performance.test.ts`, `useComponentDebug.test.tsx`)
+- [x] Set up linters (ESLint) and formatters (Prettier) (`eslint.config.js`, `.prettierrc`)
+- [x] Add basic documentation (README, PRD, Architecture, Contributing, Debugging, Progress)
 
 ## Phase 1: Core Generation PoC (Proof of Concept)
 
-- [ ] Create ElevenLabs API service module
-
-  - [ ] Implement functionality to convert text to speech
-  - [ ] Add voice selection options
-  - [ ] Implement basic error handling
-  - [ ] Add API key configuration via env vars
-
-- [ ] Create Google AI Gemini API service module
-
+- [ ] Create ElevenLabs API service module (`src/services/elevenlabs.ts`)
+  - [x] Implement basic structure and configuration check (existing code)
+  - [x] Add API key configuration via env vars (existing code)
+  - [ ] Implement functionality to convert text to speech (existing code needs verification/testing against API)
+  - [x] Add default voice selection options (existing code)
+  - [x] Implement basic error handling (existing code)
+- [ ] Create Google AI Gemini API service module (`src/services/storyGenerator.ts`)
   - [ ] Implement functionality to generate story content
   - [ ] Add support for generating initial story segments
   - [ ] Add support for generating story continuations based on choices
   - [ ] Implement basic error handling
   - [ ] Add API key configuration via env vars
-
-- [ ] Create basic prompt templates
-
+- [ ] Create basic prompt templates (`src/prompts/storyPrompts.ts`)
   - [ ] Draft initial story prompt template
   - [ ] Draft continuation prompt template with choice generation
   - [ ] Create basic safety guidelines in prompts
-
-- [ ] Implement basic API orchestration
+- [ ] Implement basic API orchestration (`src/hooks/useStoryEngine.ts`?)
   - [ ] Create a simple flow: Gemini Text -> ElevenLabs Audio
   - [ ] Test end-to-end with minimal UI
   - [ ] Document latency, cost, and quality findings
@@ -54,22 +49,16 @@ This document tracks the progress of the StoryTeller MVP development based on th
 ## Phase 2: Basic Story Loop & UI Shell
 
 - [ ] Create core UI components
-
-  - [ ] Build `StoryPlayer` component
+  - [ ] Build `StoryPlayer` component (`src/components/StoryPlayer/`)
   - [ ] Implement loading indicators
   - [ ] Create Play/Pause controls for audio
-  - [ ] Build basic navigation layout
-
-- [ ] Implement basic state management for story flow
-
-  - [ ] Create store for story state (text, audio source, loading status)
+  - [ ] Build basic navigation layout (`src/App.tsx` structure exists)
+- [ ] Implement basic state management for story flow (`src/store/useStoryStore.ts`)
+  - [x] Create store for story state (text, audio source, loading status) - Basic structure exists
   - [ ] Implement state updates based on API responses
-
-- [ ] Create story initiation
-
+- [ ] Create story initiation (`src/components/StoryInitiation/`)
   - [ ] Build simple theme selection UI
   - [ ] Connect theme selection to story generation
-
 - [ ] Connect UI to API services
   - [ ] Integrate story text display with Gemini service
   - [ ] Integrate audio playback with ElevenLabs service
@@ -77,67 +66,49 @@ This document tracks the progress of the StoryTeller MVP development based on th
 ## Phase 3: Dynamic Choices & State Management
 
 - [ ] Enhance Gemini prompts for choice generation
-
   - [ ] Update prompts to request story with 2-3 choices in structured format
   - [ ] Implement parsing of choices from LLM responses
-
 - [ ] Build choice UI components
-
   - [ ] Create `ChoiceButton` component
   - [ ] Implement choice display in `StoryPlayer`
-
 - [ ] Implement choice-based story continuation
-
   - [ ] Enhance state management for tracking choices
-  - [ ] Create logic for sending choice context to Gemini
+  - [ ] Create logic for sending choice context to Gemini (`useStoryEngine`?)
   - [ ] Implement full story loop with choices and continuations
-
 - [ ] Add basic error recovery for API failures
   - [ ] Implement retry mechanisms
   - [ ] Add user-friendly error messages
 
 ## Phase 4: Profile Management & Persistence
 
-- [ ] Implement profile management UI
-
+- [ ] Implement profile management UI (`src/components/ProfileSelection/`)
   - [ ] Create profile creation component
   - [ ] Build profile selection screen
   - [ ] Add avatar selection functionality
-
-- [ ] Create LocalStorage service
-
-  - [ ] Implement profile saving/loading
-  - [ ] Add methods for storing minimal story progress
-
+- [ ] Create LocalStorage service (`src/utils/storage.ts` or use Zustand persist)
+  - [x] Implement profile saving/loading (via Zustand persist in `useProfileStore.ts`)
+  - [ ] Add methods for storing minimal story progress (partially via Zustand persist in `useStoryStore.ts`)
 - [ ] Connect profile system to app flow
-
   - [ ] Integrate profile selection into app startup
   - [ ] Associate story progress with profiles
-
-- [ ] Implement minimal progress tracking
-  - [ ] Save initiating prompt/theme
-  - [ ] Track completed stories
+- [ ] Implement minimal progress tracking (`useStoryStore.ts`)
+  - [x] Save initiating theme (existing in `startStory`)
+  - [x] Track completed stories (existing in `completeStory`)
   - [ ] Show completion status in UI
 
 ## Phase 5: Comprehension Questions & Polish
 
 - [ ] Enhance Gemini prompts for comprehension questions
-
   - [ ] Update prompts to generate 1-2 questions based on story content
   - [ ] Implement parsing of questions from LLM responses
-
 - [ ] Build comprehension question UI
-
   - [ ] Create question display component
   - [ ] Implement multiple-choice answer selection
   - [ ] Add feedback for correct/incorrect answers
-
 - [ ] Refine overall UI/UX
-
   - [ ] Add animations and transitions
   - [ ] Improve layout and responsiveness
   - [ ] Enhance visual design elements
-
 - [ ] Implement accessibility features
   - [ ] Add keyboard navigation
   - [ ] Implement ARIA attributes
@@ -146,26 +117,20 @@ This document tracks the progress of the StoryTeller MVP development based on th
 ## Phase 6: Safety, Testing & Deployment Prep
 
 - [ ] Implement safety measures
-
   - [ ] Refine prompt safety guidelines
   - [ ] Configure API safety settings
   - [ ] Add content filtering mechanisms
   - [ ] Implement input validation
-
 - [ ] Conduct comprehensive testing
-
   - [ ] Perform usability testing with target age group
   - [ ] Test across multiple browsers
   - [ ] Verify error handling and edge cases
-
 - [ ] Prepare for deployment
-
-  - [ ] Set up build process
+  - [ ] Set up build process (`npm run build` exists)
   - [ ] Optimize assets
   - [ ] Document deployment requirements
-
 - [ ] Finalize documentation
-  - [ ] Update README with setup instructions
+  - [x] Update README with setup instructions
   - [ ] Document API integrations
   - [ ] Create user guide
 
@@ -180,7 +145,9 @@ This document tracks the progress of the StoryTeller MVP development based on th
 
 ## Notes and Observations
 
-_Add any important notes, observations, or decisions made during development here._
+- Successfully configured ESLint (`eslint.config.js`) to handle ESM (`.ts`, `.tsx`, `eslint.config.js`) and CJS (`tailwind.config.js`) files correctly.
+- Resolved issues related to `no-console`, `no-explicit-any`, `no-unused-vars`, `no-undef` (for `process`), and `react-hooks/rules-of-hooks`.
+- Debugging utilities (logger, performance monitor, debug hook, error boundary, debug panel) are set up and tested.
 
 ## Risks and Mitigations
 
