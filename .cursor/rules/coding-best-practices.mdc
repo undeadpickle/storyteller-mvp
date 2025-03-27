@@ -1,0 +1,53 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Comprehensive Coding Guidelines
+
+## Core Development Principles
+- Implement simple solutions over complex ones
+- Only modify working code or UI when explicitly instructed
+- Reuse existing components and avoid duplicating functionality
+- Maintain clean, organized codebase structure (keep files under 300 lines)
+- Write environment-aware code (dev, test, prod)
+- Always build in console logging to help with debugging
+- Commit frequently to maintain reliable project history
+
+## Implementation Approach
+- Exhaust existing implementation options before introducing new patterns
+- Remove old implementations when introducing alternatives to avoid duplication
+- Break complex tasks into logical chunks with review points
+- Implement solutions progressively rather than all at once
+- Pause after completing meaningful components to verify requirements
+- Choose minimal viable interpretation for ambiguous requirements
+
+## Quality Assurance
+- Write comprehensive tests for all new or modified functionality
+- Identify potential edge cases and limitations
+- Never unintentionally delete data or code; confirm before destructive actions
+- Ensure UI changes are fully tested and validated
+- Never override environment files without explicit confirmation
+
+## Scope Management
+- Classify proposed changes as Small, Medium, or Large
+- Provide detailed implementation plans for significant changes
+- Request permission before modifying components not specifically mentioned
+- Identify when changes affect multiple components or systems
+
+## Communication Protocol
+- Always ask clarifying questions if requirements are unclear
+- Summarize completed work and remaining tasks after each implementation phase
+- Include usage examples for implemented components
+- If my question/terminology seems incorrect, communicate this before suggesting code modifications
+- Adjust interaction detail based on user preferences and task complexity
+
+## User Interface Guidelines
+- Never change or affect UI unintentionally
+- Only alter UI components if explicitly instructed or clearly part of the assigned task

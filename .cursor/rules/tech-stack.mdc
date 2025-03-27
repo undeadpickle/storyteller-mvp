@@ -1,0 +1,48 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# StoryTeller MVP - Tech Stack (v1.2 - Dynamic Generation)
+
+This document outlines the core technologies chosen for the StoryTeller MVP, now incorporating dynamic story generation. **Note:** This stack represents significantly increased complexity compared to a pre-written content approach.
+
+## Core Frontend
+
+* **Framework:** React (`latest` stable version, likely 18+)
+* **Build Tool / Dev Server:** Vite (`latest` stable version)
+* **Language:** JavaScript (ES6+) or TypeScript (TBD)
+* **Package Manager:** npm or yarn
+
+## State Management
+
+* **Primary:** Zustand (`latest`) recommended due to increased asynchronous complexity. *(React Context API + `useReducer` is an alternative but may be harder to manage).*
+
+## Styling
+
+* **Method:** Tailwind CSS (`latest`) with shadcn/ui component system
+* **Component Library:** shadcn/ui (based on Radix UI primitives and Tailwind CSS)
+* **Utilities:** clsx, tailwind-merge for conditional styling
+
+## AI Integrations & Orchestration
+
+* **Text Generation:** Google AI Gemini API (or similar Text LLM)
+* **Voice Generation:** ElevenLabs API
+* **Interaction:** Custom logic (e.g., hooks, services) to manage calls between Text LLM -> ElevenLabs -> UI.
+* **Access:** Via `Workspace` API or `axios`.
+
+## Storage
+
+* **Client-Side:** Browser `localStorage` (Primarily for profiles and minimal progress state like initiating prompt/theme. **Note:** Likely insufficient for saving full generated story state).
+* **Backend/Database:** **None** for MVP (but limitations of `localStorage` are more critical now).
+
+## Environment
+
+* **Runtime:** Node.js (`latest` LTS version)
+* **Platform:** Web Browser (targeting latest Chrome, Firefox, Safari, Edge)
+
+## Key Considerations Added
+
+* **Prompt Engineering:** Significant effort required to design and refine prompts for the Text LLM.
+* **Safety Implementation:** Critical requirement for filtering/guardrails appropriate for children.
+* **Latency Management:** UX design must account for delays from sequential AI API calls.
