@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -11,16 +12,17 @@ import { StoreTest } from './components/StoreTest';
 import { ErrorBoundary } from './components/debug/ErrorBoundary';
 import { DebugPanel } from './components/debug/DebugPanel';
 import { logger } from './utils/debug';
-import { testDebugSystem } from './utils/manualTests';
-import { useEffect } from 'react';
+import { testDebugSystem } from './utils/manualTests'; // Assuming this is correctly imported
 
 function App() {
   // Expose test function in development mode
   useEffect(() => {
     if (import.meta.env.DEV) {
-      // @ts-ignore - Adding to window for testing purposes
+      // @ts-expect-error - Adding to window for testing purposes, acknowledge potential type error
       window.testDebugSystem = testDebugSystem;
 
+      // These console.log statements might still trigger 'no-console' warnings
+      // unless the rule is relaxed for this file in eslint.config.js
       console.log(
         '%c📋 Debug Testing Available',
         'color: #8b5cf6; font-size: 14px; font-weight: bold;'
@@ -30,13 +32,14 @@ function App() {
 
     // Log app initialization
     logger.info('App initialized', {
-      version: import.meta.env.VITE_APP_VERSION || '0.0.0',
+      // Consider adding VITE_APP_VERSION to your .env if you want to use it
+      // version: import.meta.env.VITE_APP_VERSION || '0.0.0',
       environment: import.meta.env.MODE,
     });
 
     return () => {
       if (import.meta.env.DEV) {
-        // @ts-ignore - Removing from window
+        // @ts-expect-error - Removing from window, acknowledge potential type error
         delete window.testDebugSystem;
       }
     };

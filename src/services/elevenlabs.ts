@@ -23,21 +23,21 @@ export interface TextToSpeechResponse {
 
 // Default available voices
 export const AVAILABLE_VOICES: VoiceOption[] = [
-  { 
-    id: "21m00Tcm4TlvDq8ikWAM", 
-    name: "Rachel", 
-    description: "Calm and clear female voice, ideal for storytelling" 
+  {
+    id: '21m00Tcm4TlvDq8ikWAM',
+    name: 'Rachel',
+    description: 'Calm and clear female voice, ideal for storytelling',
   },
-  { 
-    id: "AZnzlk1XvdvUeBnXmlld", 
-    name: "Domi", 
-    description: "Passionate, emotional male voice" 
+  {
+    id: 'AZnzlk1XvdvUeBnXmlld',
+    name: 'Domi',
+    description: 'Passionate, emotional male voice',
   },
-  { 
-    id: "EXAVITQu4vr4xnSDxMaL", 
-    name: "Bella", 
-    description: "Gentle female voice with a soft tone" 
-  }
+  {
+    id: 'EXAVITQu4vr4xnSDxMaL',
+    name: 'Bella',
+    description: 'Gentle female voice with a soft tone',
+  },
 ];
 
 // Default voice settings
@@ -46,7 +46,7 @@ const DEFAULT_OPTIONS: Omit<TextToSpeechOptions, 'voiceId'> = {
   stability: 0.5,
   similarityBoost: 0.75,
   style: 0,
-  speakerBoost: true
+  speakerBoost: true,
 };
 
 /**
@@ -84,12 +84,15 @@ async function makeFetchRequest(url: string, options: RequestInit): Promise<Resp
 class ElevenLabsService {
   private apiKey: string;
   private apiUrl: string = 'https://api.elevenlabs.io/v1';
-  
+
   constructor() {
     this.apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY || '';
-    
+
     if (!this.apiKey) {
-      logger.error('ElevenLabsService', 'API key is missing. Set VITE_ELEVENLABS_API_KEY in your .env file');
+      logger.error(
+        'ElevenLabsService',
+        'API key is missing. Set VITE_ELEVENLABS_API_KEY in your .env file'
+      );
     }
   }
 
@@ -104,12 +107,12 @@ class ElevenLabsService {
    * Converts text to speech using ElevenLabs API
    */
   async convertTextToSpeech(
-    text: string, 
+    text: string,
     options: Partial<TextToSpeechOptions> = {}
   ): Promise<TextToSpeechResponse> {
     try {
       logger.api('ElevenLabsService', 'convertTextToSpeech', { textLength: text.length, options });
-      
+
       if (!this.isConfigured()) {
         throw new Error('ElevenLabs API key is not configured');
       }
@@ -122,48 +125,48 @@ class ElevenLabsService {
       const fullOptions: TextToSpeechOptions = {
         ...DEFAULT_OPTIONS,
         voiceId: options.voiceId || AVAILABLE_VOICES[0].id,
-        ...options
+        ...options,
       };
 
-      const response = await fetch(
-        `${this.apiUrl}/text-to-speech/${fullOptions.voiceId}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'xi-api-key': this.apiKey
+      const response = await fetch(`${this.apiUrl}/text-to-speech/${fullOptions.voiceId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'xi-api-key': this.apiKey,
+        },
+        body: JSON.stringify({
+          text,
+          model_id: fullOptions.modelId,
+          voice_settings: {
+            stability: fullOptions.stability,
+            similarity_boost: fullOptions.similarityBoost,
+            style: fullOptions.style,
+            use_speaker_boost: fullOptions.speakerBoost,
           },
-          body: JSON.stringify({
-            text,
-            model_id: fullOptions.modelId,
-            voice_settings: {
-              stability: fullOptions.stability,
-              similarity_boost: fullOptions.similarityBoost,
-              style: fullOptions.style,
-              use_speaker_boost: fullOptions.speakerBoost
-            }
-          })
-        }
-      );
+        }),
+      });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(`ElevenLabs API error: ${response.status} ${errorData.detail || response.statusText}`);
+        throw new Error(
+          `ElevenLabs API error: ${response.status} ${errorData.detail || response.statusText}`
+        );
       }
 
       // The response is the audio data
       const audioBlob = await response.blob();
-      
+
       // Create a URL for the audio blob
       const audioUrl = URL.createObjectURL(audioBlob);
-      
+
       logger.api('ElevenLabsService', 'convertTextToSpeech:success', { audioUrl });
       return { audioUrl };
     } catch (error) {
       logger.error('ElevenLabsService', error);
-      return { 
-        audioUrl: '', 
-        error: error instanceof Error ? error.message : 'Unknown error during text-to-speech conversion'
+      return {
+        audioUrl: '',
+        error:
+          error instanceof Error ? error.message : 'Unknown error during text-to-speech conversion',
       };
     }
   }
@@ -176,15 +179,15 @@ class ElevenLabsService {
   async getVoices(): Promise<VoiceOption[]> {
     try {
       logger.api('ElevenLabsService', 'getVoices');
-      
+
       if (!this.isConfigured()) {
         throw new Error('ElevenLabs API key is not configured');
       }
-      
+
       // For MVP, we're using the static list to avoid additional API calls
       // This could be replaced with a real API call in the future
       return AVAILABLE_VOICES;
-      
+
       /*
       // Real implementation would look like this:
       // @ts-expect-error - fetch is available in browser environments
@@ -217,4 +220,4 @@ class ElevenLabsService {
 // Create a singleton instance
 const elevenlabsService = new ElevenLabsService();
 
-export default elevenlabsService; 
+export default elevenlabsService;

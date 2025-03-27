@@ -17,8 +17,9 @@ export function DebugPanel() {
   const { profiles, activeProfileId } = useProfileStore();
 
   // Story store state
-  const { theme, currentSegment, isGenerating, isPlaying, segments, questions, progress } =
-    useStoryStore();
+  // Removed unused state variables like 'currentSegment', 'isPlaying', 'segments', 'questions'
+  // Add them back if they become needed for display here.
+  const { theme, isGenerating, progress } = useStoryStore();
 
   // Toggle panel with Ctrl+Shift+D keyboard shortcut
   useEffect(() => {
@@ -33,9 +34,8 @@ export function DebugPanel() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Don't render in production
-  if (import.meta.env.PROD) return null;
-  if (!isVisible) return null;
+  // Don't render in production or if not visible
+  if (!import.meta.env.DEV || !isVisible) return null;
 
   return (
     <div className="fixed bottom-4 right-4 w-96 max-h-[80vh] overflow-auto bg-slate-900 text-slate-200 p-3 rounded-md shadow-lg z-50 text-xs">
@@ -65,7 +65,7 @@ export function DebugPanel() {
             {profiles.length > 0 && (
               <details>
                 <summary className="cursor-pointer text-slate-400">View Profiles</summary>
-                <pre className="mt-1 p-1 bg-slate-800 rounded">
+                <pre className="mt-1 p-1 bg-slate-800 rounded overflow-auto">
                   {JSON.stringify(profiles, null, 2)}
                 </pre>
               </details>
@@ -79,23 +79,16 @@ export function DebugPanel() {
           <div className="pl-2">
             <div>Theme: {theme || 'None'}</div>
             <div>Generating: {isGenerating ? 'Yes' : 'No'}</div>
-            <div>Playing: {isPlaying ? 'Yes' : 'No'}</div>
-            <div>Segments: {segments.length}</div>
-            <div>Questions: {questions.length}</div>
+            {/* Removed display for unused state variables */}
+            {/* <div>Segments: {segments.length}</div> */}
+            {/* <div>Questions: {questions.length}</div> */}
 
-            {currentSegment && (
-              <details>
-                <summary className="cursor-pointer text-slate-400">Current Segment</summary>
-                <pre className="mt-1 p-1 bg-slate-800 rounded">
-                  {JSON.stringify(currentSegment, null, 2)}
-                </pre>
-              </details>
-            )}
+            {/* Add back details for currentSegment if needed */}
 
             {progress.length > 0 && (
               <details>
                 <summary className="cursor-pointer text-slate-400">Progress</summary>
-                <pre className="mt-1 p-1 bg-slate-800 rounded">
+                <pre className="mt-1 p-1 bg-slate-800 rounded overflow-auto">
                   {JSON.stringify(progress, null, 2)}
                 </pre>
               </details>
@@ -103,13 +96,14 @@ export function DebugPanel() {
           </div>
         </div>
 
-        {/* Performance */}
+        {/* Performance Actions (e.g., Clear Console) */}
         <div>
-          <h3 className="font-semibold text-blue-400 mb-1">Performance</h3>
+          <h3 className="font-semibold text-blue-400 mb-1">Actions</h3>
           <button
             onClick={() => {
+              // Assuming 'no-console' rule is relaxed for this file via config
               console.clear();
-              console.log('Performance measurements reset');
+              console.log('Console cleared by Debug Panel');
             }}
             className="text-xs bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded"
           >

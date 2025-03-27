@@ -2,6 +2,7 @@
 import elevenlabsService, { AVAILABLE_VOICES } from '../../services/elevenlabs';
 
 // Mock logger to prevent console output during tests
+// Assuming logger is correctly mocked elsewhere or this structure works for your setup
 jest.mock('../../utils/debug', () => ({
   logger: {
     api: jest.fn(),
@@ -15,36 +16,33 @@ jest.mock('../../utils/debug', () => ({
 // Mock environment variables
 const MOCK_API_KEY = 'test-api-key';
 
-// Store original globals
-const originalFetch = global.fetch;
-const originalURL = global.URL;
+// Store original globals using globalThis
+const originalFetch = globalThis.fetch;
+const originalURL = globalThis.URL;
 const originalProcessEnv = process.env;
 
 describe('ElevenLabsService', () => {
   // Define mocks
   const mockFetch = jest.fn();
   const mockCreateObjectURL = jest.fn(() => 'blob:http://localhost/mock-url');
-  const mockRevokeObjectURL = jest.fn(); // Add mock for revokeObjectURL if needed
+  const mockRevokeObjectURL = jest.fn();
 
   beforeEach(() => {
     // Reset mocks before each test
     mockFetch.mockClear();
     mockCreateObjectURL.mockClear();
-    mockRevokeObjectURL.mockClear(); // Clear revoke mock too
+    mockRevokeObjectURL.mockClear();
 
-    // Assign mocks to global scope
-    global.fetch = mockFetch;
+    // Assign mocks to global scope using globalThis
+    globalThis.fetch = mockFetch;
 
-    // Improved URL mock - Create a mock class/object that matches the structure
-    global.URL = {
+    // Mock globalThis.URL, disabling the 'any' rule for this specific mock
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    globalThis.URL = {
       createObjectURL: mockCreateObjectURL,
       revokeObjectURL: mockRevokeObjectURL,
       // Add other static methods or properties if your code uses them
-      // Provide a basic constructor mock if needed, though often just mocking static methods is enough
-      // If you actually instantiate URL with 'new URL(...)', you'll need a class mock:
-      // class MockURL { constructor() {} } // Basic example
-      // global.URL = class MockURL { ... static methods ... } as any;
-    } as any; // Use 'as any' for simplicity if full typing is complex, or type it properly
+    } as any; // Using 'as any' for simplicity in mocking complex browser API
 
     // Mock process.env
     process.env = {
@@ -52,23 +50,23 @@ describe('ElevenLabsService', () => {
       VITE_ELEVENLABS_API_KEY: MOCK_API_KEY,
     };
 
-    // Reset the service instance to pick up the mocked env var
+    // Reset modules to ensure the service might re-read env vars if needed
+    // This is important if the service caches the API key on initialization.
     jest.resetModules();
-    // Dynamically import the service *after* mocks are set up
-    // Note: This might require changes if the service isn't easily re-importable.
-    // Consider dependency injection for easier testing as an alternative.
-    // For now, let's assume resetModules works or adjust the test structure if needed.
+    // Note: Depending on how elevenlabsService is exported/imported, you might
+    // need to re-require it here if jest.resetModules isn't enough, e.g.:
+    // elevenlabsService = require('../../services/elevenlabs').default;
   });
 
   afterEach(() => {
     // Restore original globals
-    global.fetch = originalFetch;
-    global.URL = originalURL;
+    globalThis.fetch = originalFetch;
+    globalThis.URL = originalURL;
 
     // Restore process.env
     process.env = originalProcessEnv;
 
-    // Clean up modules cache if resetModules was used
+    // Clean up modules cache
     jest.resetModules();
   });
 
@@ -77,26 +75,40 @@ describe('ElevenLabsService', () => {
     expect(AVAILABLE_VOICES[0]).toHaveProperty('id');
     expect(AVAILABLE_VOICES[0]).toHaveProperty('name');
   });
-  
+
   it('returns available voices', async () => {
-    const voices = await elevenlabsService.getVoices();
+    // Re-import service instance after potential resetModules in beforeEach/afterEach
+    const currentElevenlabsService = (await import('../../services/elevenlabs')).default;
+    const voices = await currentElevenlabsService.getVoices();
     expect(voices).toEqual(AVAILABLE_VOICES);
   });
-  
+
   it('handles missing API key', async () => {
     process.env.VITE_ELEVENLABS_API_KEY = undefined;
-    
-    const result = await elevenlabsService.convertTextToSpeech('Hello world');
-    
+    // Crucial: Reset modules again AFTER changing env var for this specific test case
+    jest.resetModules();
+    // Re-import the service to get instance initialized with the *new* (missing) env var
+    const updatedElevenlabsService = (await import('../../services/elevenlabs')).default;
+
+    const result = await updatedElevenlabsService.convertTextToSpeech('Hello world');
+
     expect(result).toHaveProperty('error');
     expect(result.error).toMatch(/API key is not configured/);
     expect(result.audioUrl).toBe('');
+    expect(mockFetch).not.toHaveBeenCalled(); // Ensure API wasn't called
   });
 
   it('should return an error if text is empty', async () => {
-    const result = await elevenlabsService.convertTextToSpeech('');
+    // Re-import service instance after potential resetModules
+    const currentElevenlabsService = (await import('../../services/elevenlabs')).default;
+    const result = await currentElevenlabsService.convertTextToSpeech('');
     expect(result.audioUrl).toBe('');
     expect(result.error).toContain('Text cannot be empty');
     expect(mockFetch).not.toHaveBeenCalled(); // Ensure fetch wasn't called
   });
-}); 
+
+  // Add more tests here:
+  // - Test successful API call mock (mockFetch.mockResolvedValueOnce(...))
+  // - Test API error handling (mockFetch.mockResolvedValueOnce({ ok: false, ... }))
+  // - Test different voice options if applicable
+});

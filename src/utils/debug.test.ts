@@ -9,19 +9,20 @@ const originalConsoleGroupEnd = console.groupEnd;
 
 // Test logger functionality
 describe('Logger Utility', () => {
-  let consoleOutput: any[] = [];
+  let consoleOutput: unknown[][] = []; // Use unknown[] instead of any[]
 
   beforeEach(() => {
     // Mock console methods
-    console.group = jest.fn((...args: any[]) => {
+    // Use unknown[] for args type safety over any[]
+    console.group = jest.fn((...args: unknown[]) => {
       consoleOutput.push(['group', ...args]);
     });
 
-    console.log = jest.fn((...args: any[]) => {
+    console.log = jest.fn((...args: unknown[]) => {
       consoleOutput.push(['log', ...args]);
     });
 
-    console.error = jest.fn((...args: any[]) => {
+    console.error = jest.fn((...args: unknown[]) => {
       consoleOutput.push(['error', ...args]);
     });
 
@@ -47,9 +48,11 @@ describe('Logger Utility', () => {
     expect(consoleOutput.length).toBeGreaterThan(0);
     expect(consoleOutput[0][0]).toBe('group');
     expect(consoleOutput[0][1]).toContain('TestStore Store: testAction');
+    // Note: console.log inside the logger uses 'Data:', so check index 2 for the object
     expect(consoleOutput[1][0]).toBe('log');
     expect(consoleOutput[1][1]).toBe('Data:');
     expect(consoleOutput[1][2]).toEqual({ test: 'data' });
+    expect(consoleOutput[2][0]).toBe('groupEnd'); // Ensure groupEnd is called
   });
 
   test('logger.api logs API calls with correct format', () => {
@@ -61,6 +64,7 @@ describe('Logger Utility', () => {
     expect(consoleOutput[1][0]).toBe('log');
     expect(consoleOutput[1][1]).toBe('Data:');
     expect(consoleOutput[1][2]).toEqual({ test: 'data' });
+    expect(consoleOutput[2][0]).toBe('groupEnd');
   });
 
   test('logger.error logs errors with correct format', () => {
@@ -70,8 +74,9 @@ describe('Logger Utility', () => {
     expect(consoleOutput.length).toBeGreaterThan(0);
     expect(consoleOutput[0][0]).toBe('group');
     expect(consoleOutput[0][1]).toContain('TestError Error');
-    expect(consoleOutput[1][0]).toBe('error');
+    expect(consoleOutput[1][0]).toBe('error'); // Check the inner call type
     expect(consoleOutput[1][1]).toBe(testError);
+    expect(consoleOutput[2][0]).toBe('groupEnd');
   });
 
   test('logger.info logs general info with correct format', () => {
@@ -80,7 +85,8 @@ describe('Logger Utility', () => {
     expect(consoleOutput.length).toBeGreaterThan(0);
     expect(consoleOutput[0][0]).toBe('group');
     expect(consoleOutput[0][1]).toContain('Test info message');
-    expect(consoleOutput[1][0]).toBe('log');
-    expect(consoleOutput[1][1]).toEqual({ test: 'data' });
+    expect(consoleOutput[1][0]).toBe('log'); // Check the inner call type
+    expect(consoleOutput[1][1]).toEqual({ test: 'data' }); // Check the data object itself
+    expect(consoleOutput[2][0]).toBe('groupEnd');
   });
 });
