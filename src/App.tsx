@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -15,6 +15,10 @@ import { logger } from './utils/debug';
 import { testDebugSystem } from './utils/manualTests'; // Assuming this is correctly imported
 import { ElevenLabsTester } from './components/debug/ElevenLabsTester';
 import { StoryPlayer } from './components/StoryPlayer/StoryPlayer';
+import StoryInitiation from './components/StoryInitiation/StoryInitiation';
+import { useStoryEngine } from './hooks/useStoryEngine';
+import { useStoryStore } from './store';
+import { Loader2 } from 'lucide-react'; // Import Loader2 icon
 
 function App() {
   // Expose test function in development mode
@@ -46,6 +50,27 @@ function App() {
       }
     };
   }, []);
+
+  // Get story engine functions and story state
+  const { startNewStory } = useStoryEngine();
+  const storySegments = useStoryStore(state => state.segments);
+  const isGenerating = useStoryStore(state => state.isGenerating); // Get generating state
+  const isStoryActive = storySegments.length > 0;
+
+  const handleThemeSelected = useCallback(
+    (theme: string) => {
+      startNewStory(theme);
+    },
+    [startNewStory]
+  );
+
+  // Define the loading component
+  const InitialLoadingIndicator = () => (
+    <div className="flex items-center justify-center my-4 text-primary p-6 border rounded-lg shadow-md max-w-prose mx-auto bg-card text-card-foreground">
+      <Loader2 className="h-6 w-6 animate-spin mr-2" />
+      <span>Generating your story... Please wait.</span>
+    </div>
+  );
 
   return (
     <ErrorBoundary
@@ -94,9 +119,16 @@ function App() {
             </CardFooter>
           </Card>
 
-          {/* >>> Render the StoryPlayer component <<< */}
+          {/* >>> Updated Conditional Rendering Logic <<< */}
           <div className="mt-8">
-            <StoryPlayer />
+            {isGenerating && !isStoryActive ? ( // Case 1: Initial generation is happening
+              <InitialLoadingIndicator />
+            ) : isStoryActive ? ( // Case 2: Story is active (segments exist)
+              <StoryPlayer />
+            ) : (
+              // Case 3: Not generating, no story active (initial state)
+              <StoryInitiation onThemeSelected={handleThemeSelected} />
+            )}
           </div>
 
           {/* Test component for Zustand stores */}

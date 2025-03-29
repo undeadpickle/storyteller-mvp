@@ -79,7 +79,7 @@ export async function generateStorySegment(prompt: string): Promise<string> {
   try {
     // For text-only input, use the gemini-pro model
     const model = genAI.getGenerativeModel({
-      model: 'gemini-pro',
+      model: 'gemini-1.5-flash-latest',
       safetySettings,
       generationConfig,
     });
