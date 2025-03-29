@@ -73,11 +73,12 @@ StoryTeller is an interactive storytelling application designed for children (ag
 
 StoryTeller includes several debugging utilities to help during development:
 
-- **Logger**: Color-coded console logs (`log`, `info`, `warn`, `error`, `debug`, `group`, `groupEnd`) for different types of operations (See `src/utils/debug.ts`).
+- **Logger**: Provides methods like `logger.store`, `logger.api`, `logger.error`, `logger.info`, and `logger.debug` for color-coded, grouped console output (See `src/utils/debug.ts`).
 - **Performance Monitor**: Track execution time of functions and operations using `window.performance` (See `src/utils/performance.ts`).
 - **Component Debug Hook**: Track component lifecycle (mount/unmount) and dependency changes (`useComponentDebug` hook, See `src/hooks/useComponentDebug.ts`).
 - **Error Boundaries**: Catch and display React rendering errors gracefully (See `src/components/debug/ErrorBoundary.tsx`).
 - **Debug Panel**: Toggle an overlay panel with `Ctrl+Shift+D` in development mode to inspect application state (See `src/components/debug/DebugPanel.tsx`).
+- **ElevenLabs API Tester**: Interactive component for testing text-to-speech functionality (See `src/components/debug/ElevenLabsTester.tsx`).
 
 Refer to `docs/debugging.md` for detailed information on using these tools.
 

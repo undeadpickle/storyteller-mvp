@@ -125,6 +125,42 @@ The `DebugPanel` component in `src/components/debug/DebugPanel.tsx` provides a r
 - Toggle with: `Ctrl+Shift+D` (only works in development mode, checks import.meta.env.DEV)
 - Features: Shows current app state (loading, error), profile state (active profile, list), story state (theme, generating status, progress), and provides actions like clearing the console.
 
+### 6. ElevenLabs API Tester
+
+The `ElevenLabsTester` component in `src/components/debug/ElevenLabsTester.tsx` provides an interactive interface for testing the ElevenLabs text-to-speech API directly within the application.
+
+- Only visible in development mode (conditionally rendered with `import.meta.env.DEV` check in `App.tsx`)
+- Features:
+  - API configuration check (verifies if VITE_ELEVENLABS_API_KEY is set)
+  - Voice selection dropdown with all available voices
+  - Text input area for entering content to convert to speech
+  - Audio player for immediate playback of generated speech
+  - Error handling and display
+  - Loading state indication during API calls
+
+Example location in `App.tsx`:
+
+```typescript
+{import.meta.env.DEV && (
+  <Card className="mb-8">
+    <CardHeader>
+      <CardTitle>ElevenLabs API Tester</CardTitle>
+      <CardDescription>Test the text-to-speech functionality</CardDescription>
+    </CardHeader>
+    <CardContent>
+      <ElevenLabsTester />
+    </CardContent>
+  </Card>
+)}
+```
+
+This component is particularly useful for:
+
+- Verifying API key configuration
+- Testing different voices and text inputs
+- Assessing audio quality and performance
+- Debugging API communication issues
+
 ## Environment Checks
 
 Note that debugging utilities often rely on checking the environment. Use Vite's `import.meta.env.DEV` boolean flag for checks in browser-facing code (like utils, hooks, components) instead of Node.js's `process.env.NODE_ENV`.

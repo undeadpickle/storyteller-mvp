@@ -13,6 +13,8 @@ import { ErrorBoundary } from './components/debug/ErrorBoundary';
 import { DebugPanel } from './components/debug/DebugPanel';
 import { logger } from './utils/debug';
 import { testDebugSystem } from './utils/manualTests'; // Assuming this is correctly imported
+import { ElevenLabsTester } from './components/debug/ElevenLabsTester';
+import { StoryPlayer } from './components/StoryPlayer/StoryPlayer';
 
 function App() {
   // Expose test function in development mode
@@ -53,6 +55,19 @@ function App() {
     >
       <div className="min-h-screen bg-background">
         <div className="container mx-auto py-8">
+          {/* ElevenLabsTester component for testing the API */}
+          {import.meta.env.DEV && (
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle>ElevenLabs API Tester</CardTitle>
+                <CardDescription>Test the text-to-speech functionality</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ElevenLabsTester />
+              </CardContent>
+            </Card>
+          )}
+
           <Card className="mb-8">
             <CardHeader>
               <CardTitle>StoryTeller MVP</CardTitle>
@@ -79,8 +94,13 @@ function App() {
             </CardFooter>
           </Card>
 
+          {/* >>> Render the StoryPlayer component <<< */}
+          <div className="mt-8">
+            <StoryPlayer />
+          </div>
+
           {/* Test component for Zustand stores */}
-          <Card>
+          <Card className="mt-8">
             <CardHeader>
               <CardTitle>State Management Test</CardTitle>
               <CardDescription>Testing Zustand store functionality</CardDescription>

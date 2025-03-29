@@ -25,34 +25,36 @@ This document tracks the progress of the StoryTeller MVP development based on th
 
 ## Phase 1: Core Generation PoC (Proof of Concept)
 
-- [ ] Create ElevenLabs API service module (`src/services/elevenlabs.ts`)
+- [x] Create ElevenLabs API service module (`src/services/elevenlabs.ts`)
   - [x] Implement basic structure and configuration check (existing code)
   - [x] Add API key configuration via env vars (existing code)
-  - [ ] Implement functionality to convert text to speech (existing code needs verification/testing against API)
+  - [x] Implement functionality to convert text to speech (tested with ElevenLabsTester component)
   - [x] Add default voice selection options (existing code)
   - [x] Implement basic error handling (existing code)
-- [ ] Create Google AI Gemini API service module (`src/services/storyGenerator.ts`)
-  - [ ] Implement functionality to generate story content
-  - [ ] Add support for generating initial story segments
-  - [ ] Add support for generating story continuations based on choices
-  - [ ] Implement basic error handling
-  - [ ] Add API key configuration via env vars
-- [ ] Create basic prompt templates (`src/prompts/storyPrompts.ts`)
-  - [ ] Draft initial story prompt template
-  - [ ] Draft continuation prompt template with choice generation
-  - [ ] Create basic safety guidelines in prompts
-- [ ] Implement basic API orchestration (`src/hooks/useStoryEngine.ts`?)
-  - [ ] Create a simple flow: Gemini Text -> ElevenLabs Audio
-  - [ ] Test end-to-end with minimal UI
+  - [x] Create ElevenLabsTester component for API testing (`src/components/debug/ElevenLabsTester.tsx`)
+- [x] Create Google AI Gemini API service module (`src/services/storyGenerator.ts`)
+  - [x] Implement functionality to generate story content
+  - [x] Add support for generating initial story segments
+  - [x] Add support for generating story continuations based on choices
+  - [x] Implement basic error handling
+  - [x] Add API key configuration via env vars
+- [x] Create basic prompt templates (`src/prompts/storyPrompts.ts`)
+  - [x] Draft initial story prompt template
+  - [x] Draft continuation prompt template with choice generation
+  - [x] Create basic safety guidelines in prompts
+  - [x] Add utility functions for parsing/stripping choices
+- [x] Implement basic API orchestration (`src/hooks/useStoryEngine.ts`)
+  - [x] Create a simple flow: Gemini Text -> ElevenLabs Audio (via hook)
+  - [x] Test end-to-end with minimal UI
   - [ ] Document latency, cost, and quality findings
 
 ## Phase 2: Basic Story Loop & UI Shell
 
-- [ ] Create core UI components
-  - [ ] Build `StoryPlayer` component (`src/components/StoryPlayer/`)
-  - [ ] Implement loading indicators
-  - [ ] Create Play/Pause controls for audio
-  - [ ] Build basic navigation layout (`src/App.tsx` structure exists)
+- [x] Create core UI components
+  - [x] Build `StoryPlayer` component (`src/components/StoryPlayer/`)
+  - [x] Implement loading indicators
+  - [x] Create Play/Pause controls for audio
+  - [x] Build basic navigation layout (`src/App.tsx` structure exists)
 - [ ] Implement basic state management for story flow (`src/store/useStoryStore.ts`)
   - [x] Create store for story state (text, audio source, loading status) - Basic structure exists
   - [ ] Implement state updates based on API responses
@@ -136,7 +138,7 @@ This document tracks the progress of the StoryTeller MVP development based on th
 
 ## General Progress
 
-- [ ] Milestone: Core PoC completed (end of Phase 1)
+- [x] Milestone: Core PoC completed (end of Phase 1)
 - [ ] Milestone: Basic story playback working (end of Phase 2)
 - [ ] Milestone: Interactive story flow with choices (end of Phase 3)
 - [ ] Milestone: Multi-user support with profiles (end of Phase 4)
@@ -147,7 +149,8 @@ This document tracks the progress of the StoryTeller MVP development based on th
 
 - Successfully configured ESLint (`eslint.config.js`) to handle ESM (`.ts`, `.tsx`, `eslint.config.js`) and CJS (`tailwind.config.js`) files correctly.
 - Resolved issues related to `no-console`, `no-explicit-any`, `no-unused-vars`, `no-undef` (for `process`), and `react-hooks/rules-of-hooks`.
-- Debugging utilities (logger, performance monitor, debug hook, error boundary, debug panel) are set up and tested.
+- Debugging utilities (logger, performance monitor, debug hook, error boundary, debug panel) are set up and tested (verified via `testDebugSystem` and manual triggers).
+- Resolved persistent "Maximum update depth exceeded" rendering loop related to `useStoryEngine` dependencies and state updates.
 
 ## Risks and Mitigations
 

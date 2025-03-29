@@ -49,7 +49,7 @@ This structure reflects the organization of the codebase as of March 27, 2025.
 │   ├── hooks/                  # Custom React hooks
 │   │   ├── useComponentDebug.test.tsx # Unit test for useComponentDebug hook
 │   │   ├── useComponentDebug.ts     # Hook for debugging component lifecycle
-│   │   └── useStoryEngine.ts        # Hook for core story logic (placeholder)
+│   │   └── useStoryEngine.ts        # Hook for core story generation and audio orchestration
 │   ├── index.css               # Main CSS entry point (imports Tailwind)
 │   ├── lib/                    # Shared utility libraries/functions
 │   │   └── utils.ts            # General utilities (e.g., cn function)
@@ -59,10 +59,10 @@ This structure reflects the organization of the codebase as of March 27, 2025.
 │   │   ├── Story.ts            # Interfaces for story data (placeholder)
 │   │   └── UserProfile.ts      # Interface for user profile data (placeholder)
 │   ├── prompts/                # AI prompt templates and generation logic
-│   │   └── storyPrompts.ts     # Prompt templates for story generation (placeholder)
+│   │   └── storyPrompts.ts     # Prompt templates and utilities for story generation
 │   ├── services/               # Modules for interacting with external APIs
 │   │   ├── elevenlabs.ts       # Service for ElevenLabs Text-to-Speech API
-│   │   └── storyGenerator.ts   # Service for Google Gemini API (placeholder)
+│   │   └── storyGenerator.ts   # Service for Google Gemini API for text generation
 │   ├── store/                  # Zustand state management stores
 │   │   ├── index.ts            # Barrel file for exporting stores
 │   │   ├── useAppStore.ts      # Store for global app state
@@ -105,42 +105,52 @@ The application uses Zustand for efficient state management, split into logical 
 
 ### Service Modules
 
-1.  **`src/services/storyGenerator.ts`**: Interfaces with the Google AI Gemini API (or chosen LLM) to generate story content, choices, and comprehension questions based on prompts and context.
-2.  **`src/services/elevenlabs.ts`**: Interfaces with the ElevenLabs API to convert generated text segments into speech audio.
+1.  **`src/services/storyGenerator.ts`**: Interfaces with the Google AI Gemini API using the `@google/generative-ai` library to generate story content and choices based on prompts constructed in `storyPrompts.ts`.
+2.  **`src/services/elevenlabs.ts`**: Interfaces with the ElevenLabs API via `fetch` to convert generated text segments into speech audio (`.mp3` Blob URLs).
 
-### Core Logic Flow (`useStoryEngine` Hook - Proposed)
+### Prompt Templates
 
-A central custom hook (e.g., `src/hooks/useStoryEngine.ts`) would likely orchestrate the main story loop:
+1.  **`src/prompts/storyPrompts.ts`**: Contains functions (`getInitialStoryPrompt`, `getContinuationStoryPrompt`) to generate detailed prompts for the Gemini API, including safety instructions and choice formatting guidelines. Also includes utility functions (`parseChoices`, `stripChoices`) for processing the LLM response.
 
-1.  **Story Initiation Flow**:
+### Core Logic Flow (`useStoryEngine` Hook)
+
+The central custom hook `src/hooks/useStoryEngine.ts` orchestrates the main story loop:
+
+_(**Note:** Initial implementation required careful refinement of state selection (e.g., using individual selectors in consuming components) and function memoization (`useCallback` with appropriate dependencies, fetching state via `getState()` within callbacks) within the hook and consuming components to prevent infinite rendering loops caused by state update cycles.)_
+
+1.  **Story Initiation Flow** (`startNewStory` function):
     ```
-    User selects theme/prompt (StoryInitiation) →
-    useStoryEngine hook triggered →
-    Set loading state (useAppStore) →
-    storyGenerator service (Gemini API for initial segment + choices) →
-    Store text/choices (useStoryStore) →
-    elevenlabs service (Generate audio for segment) →
-    Store audio URL (useStoryStore) →
-    Clear loading state, update UI (StoryPlayer)
+    User selects theme (UI Component) →
+    useStoryEngine.startNewStory(theme) triggered →
+    Set loading state (isGenerating in useStoryStore) →
+    Generate initial prompt (storyPrompts.getInitialStoryPrompt) →
+    Call storyGenerator service (Gemini API) →
+    Parse choices & strip text (storyPrompts utils) →
+    Call elevenlabs service (Generate audio Blob URL) →
+    Create StorySegment object (with ID, text, choices, audio URL) →
+    Update store (useStoryStore.addSegment) →
+    Clear loading state, update UI (StoryPlayer reacts to store changes)
     ```
-2.  **Choice Selection Flow**:
+2.  **Choice Selection Flow** (`continueStory` function):
     ```
-    User selects choice (StoryPlayer) →
-    useStoryEngine hook triggered with choice context →
+    User selects choice (StoryPlayer passes StoryChoice object) →
+    useStoryEngine.continueStory(choice) triggered →
     Set loading state →
-    storyGenerator service (Gemini API for next segment + choices) →
-    Store text/choices →
-    elevenlabs service (Generate audio) →
-    Store audio URL →
+    Generate continuation prompt (storyPrompts.getContinuationStoryPrompt with previous text & choice) →
+    Call storyGenerator service (Gemini API) →
+    Parse choices & strip text →
+    Call elevenlabs service (Generate audio Blob URL) →
+    Create next StorySegment object (linking parentChoiceId) →
+    Update store (useStoryStore.addSegment) →
     Clear loading state, update UI
     ```
-3.  **Comprehension Questions Flow** (Post-story):
+3.  **Comprehension Questions Flow** (Post-story - _Still Planned_):
     ```
-    Story completion detected (useStoryEngine) →
+    Story completion detected (Logic TBD) →
     Set loading state →
     storyGenerator service (Gemini API for questions based on story context) →
-    Store questions (useStoryStore) →
-    Clear loading state → Display questions (UI component)
+    Store questions (useStoryStore.setQuestions) →
+    Clear loading state → Display questions (UI component TBD)
     ```
 
 ## Debugging Infrastructure
@@ -152,8 +162,9 @@ The application includes a development-focused debugging system (primarily activ
 3.  **Component Debug Hook (`src/hooks/useComponentDebug.ts`)**: `useComponentDebug` logs component mount/unmount and dependency changes.
 4.  **Debug Panel (`src/components/debug/DebugPanel.tsx`)**: UI overlay toggled by `Ctrl+Shift+D` showing real-time Zustand store state.
 5.  **Error Boundaries (`src/components/debug/ErrorBoundary.tsx`)**: Catches rendering errors in component subtrees to prevent app crashes and display fallbacks.
-6.  **Manual Tests (`src/utils/manualTests.ts`)**: Console script to verify debugging tools.
-7.  **Unit Tests (`*.test.ts`, `*.test.tsx`)**: Jest tests located alongside utilities/hooks or in `src/__tests__` verify functionality, including debugging tools.
+6.  **ElevenLabsTester (`src/components/debug/ElevenLabsTester.tsx`)**: Interactive interface for testing the ElevenLabs text-to-speech API with voice selection and audio playback.
+7.  **Manual Tests (`src/utils/manualTests.ts`)**: Console script to verify debugging tools.
+8.  **Unit Tests (`*.test.ts`, `*.test.tsx`)**: Jest tests located alongside utilities/hooks or in `src/__tests__` verify functionality, including debugging tools.
 
 ## Data Persistence
 
