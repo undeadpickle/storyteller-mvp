@@ -1,17 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useStoryStore } from '@/store/useStoryStore';
+import { useStoryStore, StoryChoice } from '@/store/useStoryStore'; // Added StoryChoice import
 import { useStoryEngine } from '@/hooks/useStoryEngine'; // To handle choice selection
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react'; // Example loading icon
 import { logger } from '@/utils/debug';
 import React from 'react';
 
-// Placeholder for a choice button component (we'll create this later)
+// Placeholder for a choice button component (assuming Button can be used)
 const ChoiceButton = ({
   choice,
   onSelect,
 }: {
-  choice: { id: string; text: string };
+  choice: StoryChoice; // Use StoryChoice type
   onSelect: (choiceId: string) => void;
 }) => (
   <Button onClick={() => onSelect(choice.id)} variant="outline" className="m-1">
@@ -156,7 +156,7 @@ export function StoryPlayer() {
           // Removed recovery logic for simplification during debugging
         });
     },
-    [audioUrl, setIsPlaying]
+    [setIsPlaying] // <-- Dependency array updated: removed audioUrl
   );
   // --- END HELPER FUNCTION DEFINITION ---
 
@@ -191,14 +191,14 @@ export function StoryPlayer() {
 
         // Give the browser a moment to process the new source
         setTimeout(() => {
-          tryPlayAudio(audioElement); // NOW tryPlayAudio is defined
+          tryPlayAudio(audioElement);
         }, 100);
       } else {
         // Source is already set correctly, try to play immediately
-        tryPlayAudio(audioElement); // NOW tryPlayAudio is defined
+        tryPlayAudio(audioElement);
       }
     }
-  }, [isPlaying, audioUrl, tryPlayAudio]); // Add tryPlayAudio dependency
+  }, [isPlaying, audioUrl, tryPlayAudio, setIsPlaying]); // Added setIsPlaying here too for completeness
   // --- END MAIN HANDLER DEFINITION ---
 
   const handleChoiceSelection = (choiceId: string) => {
@@ -300,6 +300,3 @@ export function StoryPlayer() {
     </div>
   );
 }
-
-// Make sure StoryPlayer is the default export if needed, or export directly
-// export default StoryPlayer;

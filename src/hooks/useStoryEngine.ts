@@ -32,9 +32,6 @@ export function useStoryEngine(): StoryEngineState & StoryEngineActions {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // No need to select currentSegment here anymore
-  // const currentSegment = useStoryStore(state => state.currentSegment);
-
   // Store actions in refs for stable references
   const actionsRef = useRef({
     addSegment: useStoryStore.getState().addSegment,
@@ -42,14 +39,17 @@ export function useStoryEngine(): StoryEngineState & StoryEngineActions {
     resetCurrentStory: useStoryStore.getState().resetCurrentStory,
   });
 
+  // Centralized error handler
   const handleApiError = useCallback(
     (context: string, error: unknown) => {
       const message = error instanceof Error ? error.message : 'An unknown error occurred.';
       logger.error('useStoryEngine', new Error(`${context}: ${message}`));
       setError(message);
+      // Ensure loading is always stopped on error
+      setIsLoading(false);
       actionsRef.current.setIsGenerating(false);
     },
-    [actionsRef, setError]
+    [actionsRef, setError, setIsLoading] // Added setIsLoading dependency
   );
 
   /**
@@ -59,21 +59,31 @@ export function useStoryEngine(): StoryEngineState & StoryEngineActions {
   const startNewStory = useCallback(
     async (theme: string) => {
       logger.info('useStoryEngine: Starting new story', { theme });
+      // Set loading states immediately
       setIsLoading(true);
       setError(null);
       actionsRef.current.setIsGenerating(true);
       actionsRef.current.resetCurrentStory();
 
+      // **** ADDED YIELD ****
+      // Yield to the event loop to allow React to render the loading state update
+      // before starting potentially long async operations.
+      await new Promise(resolve => setTimeout(resolve, 0));
+      // **** END ADDED YIELD ****
+
       try {
         // 1. Generate the prompt for the initial story segment
         const prompt = getInitialStoryPrompt(theme);
+        logger.debug('useStoryEngine: Generated initial prompt');
 
         // 2. Call Gemini API to get the story text and choices
         const rawStoryResult = await generateStorySegment(prompt);
+        logger.debug('useStoryEngine: Received response from Gemini');
 
         // 3. Parse choices and strip them from the display text
         const parsedChoices = parseChoices(rawStoryResult);
         const storyText = stripChoices(rawStoryResult);
+        logger.debug('useStoryEngine: Parsed choices and stripped text');
 
         if (!storyText) {
           throw new Error('Generated story text is empty after stripping choices.');
@@ -92,7 +102,7 @@ export function useStoryEngine(): StoryEngineState & StoryEngineActions {
         const segmentId = generateId();
         const choices: StoryChoice[] = (parsedChoices ?? []).map((choiceText, index) => ({
           id: `${segmentId}-choice-${index}`,
-          text: choiceText,
+          text: choiceText, // Store the raw choice text (e.g., "[Choice 1: Go left]")
         }));
 
         const newSegment: StorySegment = {
@@ -104,15 +114,18 @@ export function useStoryEngine(): StoryEngineState & StoryEngineActions {
         };
 
         actionsRef.current.addSegment(newSegment);
-        setError(null);
+        setError(null); // Clear error on success
       } catch (err) {
+        // Error is logged and state set within handleApiError
         handleApiError('startNewStory failed', err);
       } finally {
+        // Loading states are set regardless of success/failure
         setIsLoading(false);
         actionsRef.current.setIsGenerating(false);
+        logger.debug('useStoryEngine: startNewStory finally block executed');
       }
     },
-    [actionsRef, handleApiError, setError, setIsLoading]
+    [actionsRef, handleApiError, setError, setIsLoading] // Updated dependencies
   );
 
   /**
@@ -140,16 +153,22 @@ export function useStoryEngine(): StoryEngineState & StoryEngineActions {
       setError(null);
       actionsRef.current.setIsGenerating(true);
 
+      // OPTIONAL: Add yield here too if loading indicator between choices is problematic
+      // await new Promise(resolve => setTimeout(resolve, 0));
+
       try {
         // 1. Generate the prompt for the continuation
         const prompt = getContinuationStoryPrompt(currentSegment.text, choice.text);
+        logger.debug('useStoryEngine: Generated continuation prompt');
 
         // 2. Call Gemini API
         const rawStoryResult = await generateStorySegment(prompt);
+        logger.debug('useStoryEngine: Received continuation response from Gemini');
 
         // 3. Parse choices and strip them
         const parsedChoices = parseChoices(rawStoryResult);
         const nextStoryText = stripChoices(rawStoryResult);
+        logger.debug('useStoryEngine: Parsed continuation choices and stripped text');
 
         if (!nextStoryText) {
           throw new Error('Generated continuation text is empty after stripping choices.');
@@ -176,19 +195,20 @@ export function useStoryEngine(): StoryEngineState & StoryEngineActions {
           text: nextStoryText,
           audioUrl: nextAudioUrl,
           choices: nextChoices,
-          parentChoiceId: choice.id,
+          parentChoiceId: choice.id, // Link this segment to the choice that triggered it
         };
 
         actionsRef.current.addSegment(nextSegment);
-        setError(null);
+        setError(null); // Clear error on success
       } catch (err) {
         handleApiError('continueStory failed', err);
       } finally {
         setIsLoading(false);
         actionsRef.current.setIsGenerating(false);
+        logger.debug('useStoryEngine: continueStory finally block executed');
       }
     },
-    [actionsRef, handleApiError, setError, setIsLoading]
+    [actionsRef, handleApiError, setError, setIsLoading] // Updated dependencies
   );
 
   return {
